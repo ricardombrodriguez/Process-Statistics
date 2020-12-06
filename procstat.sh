@@ -106,8 +106,8 @@ for k in $(ls -a | grep -Eo '[0-9]{1,5}'); do
                             LANG=en_us_8859_1
                             startDate=$(ps -o lstart= -p $k)
                             startDate=$(date +"%b %d %H:%M" -d "$startDate")
-                            dateSeg=$(date --date="$startDate" +"%s")
-                            if [[ $dateSeg -gt $sDate && $dateSeg -lt $eDate ]]; then
+                            dateTS=$(date --date="$startDate" +"%s")
+                            if [[ $dateTS -gt $sDate && $dateTS -lt $eDate ]]; then
                                 processID[index]=$k
                                 ((index++))
                             fi
@@ -184,7 +184,6 @@ for PID in ${processID[@]}; do
     LANG=en_us_8859_1
     startDate=$(ps -o lstart= -p $PID)
     date=$(date +"%b %d %H:%M" -d "$startDate")
-    dateSeg=$(date --date="$startDate" +"%s")
 
     #################### USER ####################
 
