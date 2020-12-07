@@ -11,15 +11,16 @@ declare -a infoProcess
 declare -a allRchar
 declare -a allWchar
 
+numProcess="null"
 reverse=0
-order=0
+order=1
 comm=".*"
 user="*"
 sDate=0
 eDate=$(date +"%s")
 sleepTime=${@: -1}
 total=0
- 
+
 while getopts ":s:e:c:u:p:mtdwr" opt; do
     case $opt in
         p)
@@ -27,8 +28,7 @@ while getopts ":s:e:c:u:p:mtdwr" opt; do
             if ! [[ "$numProcess" =~ ^[0-9]+$ ]]; then
                 echo "Error: Invalid options (number of -p must be a positive integer)"
                 exit 1
-            fi
-            ;;
+            fi;;
 
         u)
             user=$OPTARG;;
@@ -44,8 +44,7 @@ while getopts ":s:e:c:u:p:mtdwr" opt; do
             else 
                 echo "Error: Invalid starting date"
                 exit 1
-            fi
-            ;;
+            fi;;
 
         e)
             endingDate=$OPTARG
@@ -54,8 +53,7 @@ while getopts ":s:e:c:u:p:mtdwr" opt; do
             else 
                 echo "Error: Invalid ending date"
                 exit 1
-            fi
-            ;;
+            fi;;
 
         m)  
             ((total++))
@@ -77,19 +75,24 @@ while getopts ":s:e:c:u:p:mtdwr" opt; do
             reverse=1;;
 
         *)
-            echo "Error: command not found"          
+            echo "Error: command not found\n"          
             exit 1;;
     esac
 done
 shift $((OPTIND - 1))
+
+if [[ $eDate -le $sDate ]]; then
+    echo "Error: Invalid options (ending date smaller or equal than the starting date)"
+    exit 1 
+fi
 
 if [[ $total -gt 1 ]]; then 
     echo "Error: incompatible commands"
     exit 1 
 fi
 
-if ! [[ "$sleepTime" =~ ^[0-9]+$ ]]; then
-    echo "Error: Invalid options (sleep time is not a positive integer)"
+if ! [[ "$sleepTime" =~ ^[0-9]+$ && $sleepTime != 0 ]]; then
+    echo "Error: Invalid options (sleep time is not a positive integer or don't exist)"
     exit 1 
 fi 
 
@@ -164,16 +167,10 @@ for PID in ${processID[@]}; do
     sub=$(($rchar2-$rchar))
     rater=$( echo "scale=2; $sub/$sleepTime"| bc -l)      
     rater=${rater/#./0.}                                    
-    if [[ $rater == 0.0 ]]; then
-        rater="0"
-    fi
 
     sub=$(($wchar2-$wchar))
     ratew=$( echo "scale=2; $sub/$sleepTime"| bc -l)
     ratew=${ratew/#./0.}
-    if [[ $ratew == 0.0 ]]; then
-        ratew="0"
-    fi
 
     #################### COMM ####################
 
@@ -198,24 +195,25 @@ done
 if [[ $numProcess -gt $validProcess ]]; then
     echo "Error: You selected a greater number of processes than the available ones"
     exit 1
+elif [[ "$numProcess" == "null" ]]; then
+    numProcess=$validProcess
 fi
 
-#################### PRINT ###################
+#################### PRINT ##################
 
-if [[ $validProcess != 0 ]]; then
+if [[ $numProcess != 0 ]]; then
     printf "%-20s %-10s %5s %15s %15s %15s %15s %15s %15s %17s \n" "COMM" "USER" "PID" "MEM" "RSS" "READB" "WRITEB" "RATER" "RATEW" "DATE"
+else
+    echo "Warning: No valid processes found"
+    exit 1
 fi
 
-if [[ $order -ne 0 && $reverse -eq 0 && $numProcess -ne 0 ]]; then
+if [[ $order -ne 1 && $reverse -eq 0 ]]; then
     printf "%-20s %-10s %5s %15s %15s %15s %15s %15s %15s %8s %-1s %-1s \n" ${infoProcess[@]} | sort -k${order}rn | head -n ${numProcess}
-elif [[ $order -ne 0 && $reverse -eq 1 && $numProcess -ne 0 ]]; then
+elif [[ $order -ne 1 && $reverse -eq 1 ]]; then
     printf "%-20s %-10s %5s %15s %15s %15s %15s %15s %15s %8s %-1s %-1s \n" ${infoProcess[@]} | sort -k${order}n | head -n ${numProcess}
-elif [[ $order -ne 0 && $reverse -eq 0 ]]; then
-    printf "%-20s %-10s %5s %15s %15s %15s %15s %15s %15s %8s %-1s %-1s \n" ${infoProcess[@]} | sort -k${order}rn
-elif [[ $order -ne 0 && $reverse -eq 1 ]]; then
-    printf "%-20s %-10s %5s %15s %15s %15s %15s %15s %15s %8s %-1s %-1s \n" ${infoProcess[@]} | sort -k${order}n
-elif [[ $numProcess -ne 0 ]]; then
-    printf "%-20s %-10s %5s %15s %15s %15s %15s %15s %15s %8s %-1s %-1s \n" ${infoProcess[@]} | head -n ${numProcess}
+elif [[ $order -eq 1 && $reverse -eq 1 ]]; then
+    printf "%-20s %-10s %5s %15s %15s %15s %15s %15s %15s %8s %-1s %-1s \n" ${infoProcess[@]} | sort -k${order} -f -r| head -n ${numProcess}
 else
-    printf "%-20s %-10s %5s %15s %15s %15s %15s %15s %15s %8s %-1s %-1s \n" ${infoProcess[@]} | sort -k1 -f
+    printf "%-20s %-10s %5s %15s %15s %15s %15s %15s %15s %8s %-1s %-1s \n" ${infoProcess[@]} | sort -k${order} -f | head -n ${numProcess}
 fi
