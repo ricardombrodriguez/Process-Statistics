@@ -12,8 +12,7 @@ readings from */proc/[pid]/io* with *s* seconds interval).
 
 This script has a mandatory parameter which is the number of seconds that will be used to calculate the I/O rates. The selection of the processes to be visualized can be performed through a regular expression that is verified with the associated command (as it appears in */proc/[pid]/comm*) **(option -c)**, or through the
 definition of a time period for the start of the process. The specification of the time period is made through the minimum date **(option -s)** and maximum date **(option -e)** for the start of the process. The process selection can also be done using the username **(option -u)**. THE
-visualization is formatted as a table, with a header, showing the processes by alphabetical order. The number of processes to be viewed is controlled by the **-p option**. There are also options to change the order of the table **(-m - sort on MEM ↑, -t - sort on RSS ↑, -d - sort on RATER ↑, -w
-- sort on RATEW ↑ and -r - reverse)**.
+visualization is formatted as a table, with a header, showing the processes by alphabetical order. The number of processes to be viewed is controlled by the **-p option**. There are also options to change the order of the table **(-m - sort on MEM ↑, -t - sort on RSS ↑, -d - sort on RATER ↑, -w sort on RATEW ↑ and -r - reverse)**.
 
 ## How to run
 
